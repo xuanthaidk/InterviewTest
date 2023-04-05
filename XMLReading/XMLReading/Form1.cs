@@ -11,7 +11,6 @@ namespace XMLReading
 
         OpenFileDialog openFileDialog = new OpenFileDialog();
         SaveFileDialog saveFileDialog = new SaveFileDialog();
-        TreeNode treeNode;
         public Form1()
         {
             InitializeComponent();
@@ -20,36 +19,36 @@ namespace XMLReading
         private void LoadXmlIntoTreeView(string xmlFilePath)
         {
             XDocument xDoc = XDocument.Load(xmlFilePath);
-            if (xDoc.Root.HasElements)
+            if(xDoc.Root==null)
             {
-                if (xDoc.Root.HasAttributes)
-                {
-                    TreeNode treeNode = new TreeNode(xDoc.Root.FirstAttribute.Value.ToString());
-                    treeNode.Name = xDoc.Root.FirstAttribute.NextAttribute.Value.ToString();
-                    treeView.Nodes.Add(treeNode);
-                    AddNodes(xDoc.Root, treeNode);
-                }
-                else
-                {
-                    MessageBox.Show("This XML file doesn't have attributes!");
-                }
+                MessageBox.Show("This XML file doesn't have root!");
             }
-            else
+            if (!xDoc.Root.HasElements)
             {
                 MessageBox.Show("This XML file doesn't have elements!");
             }
+            if (!xDoc.Root.HasAttributes)
+            {
+                MessageBox.Show("This XML file doesn't have attributes!");
+            }
+            TreeNode treeNode = new TreeNode(xDoc.Root.FirstAttribute.Value.ToString());
+            if (xDoc.Root.FirstAttribute.NextAttribute != null)
+            {
+                treeNode.Name = xDoc.Root.FirstAttribute.NextAttribute.Value.ToString();
+            }
+            treeView.Nodes.Add(treeNode);
+            AddNodes(xDoc.Root, treeNode);
         }
 
         private void AddNodes(XElement xElement, TreeNode treeNode)
         {
             foreach (XElement element in xElement.Elements())
             {
+
+                XNode xnode = new XNode(element.FirstAttribute.Value.ToString(), element.FirstAttribute.Value.ToString(), element.FirstAttribute.NextAttribute.Value.ToString());
+
                 TreeNode node = new TreeNode(element.FirstAttribute.Value.ToString());
-                if(element.FirstAttribute.NextAttribute != null)
-                {
-                    node.Name = element.FirstAttribute.NextAttribute.Value.ToString();
-                }
-               
+                node.Name = element.FirstAttribute.NextAttribute.Value.ToString();           
                 treeNode.Nodes.Add(node);
                 if (element.HasElements)
                 {
@@ -59,10 +58,72 @@ namespace XMLReading
                 {
                     node.Text = element.FirstAttribute.Value.ToString();
                     node.Name = element.FirstAttribute.NextAttribute.Value.ToString();
+
+                    xnode.attribute1 = element.FirstAttribute.Value.ToString();
+                    xnode.attribute2 = element.FirstAttribute.NextAttribute.Value.ToString();
                 }
             }
         }
 
+        private void WriteSelectedNode(TreeNode selectedNode, XmlTextWriter writer)
+        {
+            writer.WriteStartElement("node");
+            writer.WriteAttributeString("Text", selectedNode.Text);
+            writer.WriteAttributeString("id", selectedNode.Name);
+
+            foreach (TreeNode childNode in selectedNode.Nodes)
+            {
+                WriteSelectedNode(childNode, writer);
+            }
+
+            writer.WriteEndElement();
+        }
+
+        private void ExportSelectedNodeToXml(TreeNode selectedNode, string filePath)
+        {
+            //XmlWriter writer = XmlWriter.Create(filePath);
+            using (XmlTextWriter writer = new XmlTextWriter(filePath, Encoding.UTF8))
+            {
+                writer.Formatting = Formatting.Indented;
+                writer.WriteStartDocument();
+                WriteSelectedNode(selectedNode, writer);
+                writer.WriteEndDocument();
+            }
+        }
+
+        private void loadFileButton_Click(object sender, EventArgs e)
+        {
+            openFileDialog.Filter = "XML file | *.xml";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                LoadXmlIntoTreeView(openFileDialog.FileName);
+            }
+        }
+
+        private void selectedSaveNodesButton_Click(object sender, EventArgs e)
+        {
+            if (treeView != null)
+            {
+                saveFileDialog.Filter = "XML File | *.xml";
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    ExportSelectedNodeToXml(treeView.SelectedNode, saveFileDialog.FileName);
+                }
+
+            }
+            else
+            {
+                MessageBox.Show("No file yet!");
+            }
+        }
+
+
+        /// <summary>
+        /// ///////////////////////////////////////////////////
+        /// </summary>
+        /// <param name="nodesCollection"></param>
+        /// <param name="writer"></param>
         private void WriteNode(TreeNodeCollection nodesCollection, XmlWriter writer)
         {
 
@@ -88,75 +149,18 @@ namespace XMLReading
                 //writer.Close();
             }
         }
-
-        private void WriteSelectedNode(TreeNode node, XmlTextWriter writer)
-        {
-            writer.WriteStartElement("Node");
-            writer.WriteAttributeString("Text", node.Text);
-            writer.WriteAttributeString("id", node.Name);
-
-            foreach (TreeNode childNode in node.Nodes)
-            {
-                WriteSelectedNode(childNode, writer);
-            }
-
-            writer.WriteEndElement();
-        }
-
-        private void ExportSelectedNodeToXml(TreeNode selectedNode, string filePath)
-        {
-            using (XmlTextWriter writer = new XmlTextWriter(filePath, Encoding.UTF8))
-            {
-                writer.Formatting = Formatting.Indented;
-                writer.WriteStartDocument();
-                WriteSelectedNode(selectedNode, writer);
-                writer.WriteEndDocument();
-            }
-        }
-
         private void saveNodesButton_Click(object sender, EventArgs e)
         {
-            if (treeView != null)
-            {
-                saveFileDialog.Filter = "XML File | *.xml";
-
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-
-                    ExportTreeViewToXml(saveFileDialog.FileName);
-                }
-
-            }
-            else
+            if (treeView == null)
             {
                 MessageBox.Show("No file yet!");
             }
-        }
-        private void loadFileButton_Click(object sender, EventArgs e)
-        {
-            openFileDialog.Filter = "XML file | *.xml";
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            saveFileDialog.Filter = "XML File | *.xml";
+
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                LoadXmlIntoTreeView(openFileDialog.FileName);
-            }
-        }
 
-        private void selectedSaveNodesButton_Click(object sender, EventArgs e)
-        {
-            if (treeView != null)
-            {
-                saveFileDialog.Filter = "XML File | *.xml";
-
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    ExportSelectedNodeToXml(treeView.SelectedNode, saveFileDialog.FileName);
-
-                }
-
-            }
-            else
-            {
-                MessageBox.Show("No file yet!");
+                ExportTreeViewToXml(saveFileDialog.FileName);
             }
         }
     }

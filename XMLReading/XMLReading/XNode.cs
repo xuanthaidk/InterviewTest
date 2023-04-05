@@ -9,12 +9,14 @@ namespace XMLReading
 {
  public class XNode : TreeNode
 {
-    public string newText { get; set; }
+    public string attribute1 { get; set; }
+    public string attribute2 { get; set; }
 
-        public XNode(string text, string newText) : base(text)
+        public XNode(string text, string attribute1, string attribute2) : base(text)
         {
             base.Text = text;
-            this.newText = newText;
+            this.attribute1 = attribute1;
+            this.attribute2 = attribute2;
         }
     }
 }

@@ -60,6 +60,7 @@
             saveNodesButton.TabIndex = 2;
             saveNodesButton.Text = "Save Nodes";
             saveNodesButton.UseVisualStyleBackColor = true;
+            saveNodesButton.Visible = false;
             saveNodesButton.Click += saveNodesButton_Click;
             // 
             // selectedSave
