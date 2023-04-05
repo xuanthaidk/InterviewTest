@@ -31,6 +31,7 @@
             loadFileButton = new Button();
             treeView = new TreeView();
             saveNodesButton = new Button();
+            selectedSave = new Button();
             SuspendLayout();
             // 
             // loadFileButton
@@ -61,11 +62,22 @@
             saveNodesButton.UseVisualStyleBackColor = true;
             saveNodesButton.Click += saveNodesButton_Click;
             // 
+            // selectedSave
+            // 
+            selectedSave.Location = new Point(249, 12);
+            selectedSave.Name = "selectedSave";
+            selectedSave.Size = new Size(127, 23);
+            selectedSave.TabIndex = 3;
+            selectedSave.Text = "Save selected nodes";
+            selectedSave.UseVisualStyleBackColor = true;
+            selectedSave.Click += selectedSaveNodesButton_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(484, 433);
+            Controls.Add(selectedSave);
             Controls.Add(saveNodesButton);
             Controls.Add(treeView);
             Controls.Add(loadFileButton);
@@ -84,5 +96,6 @@
         private Button loadFileButton;
         private TreeView treeView;
         private Button saveNodesButton;
+        private Button selectedSave;
     }
 }

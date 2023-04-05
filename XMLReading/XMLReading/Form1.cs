@@ -25,7 +25,7 @@ namespace XMLReading
                 if (xDoc.Root.HasAttributes)
                 {
                     TreeNode treeNode = new TreeNode(xDoc.Root.FirstAttribute.Value.ToString());
-
+                    treeNode.Name = xDoc.Root.FirstAttribute.NextAttribute.Value.ToString();
                     treeView.Nodes.Add(treeNode);
                     AddNodes(xDoc.Root, treeNode);
                 }
@@ -45,6 +45,11 @@ namespace XMLReading
             foreach (XElement element in xElement.Elements())
             {
                 TreeNode node = new TreeNode(element.FirstAttribute.Value.ToString());
+                if(element.FirstAttribute.NextAttribute != null)
+                {
+                    node.Name = element.FirstAttribute.NextAttribute.Value.ToString();
+                }
+               
                 treeNode.Nodes.Add(node);
                 if (element.HasElements)
                 {
@@ -53,7 +58,7 @@ namespace XMLReading
                 else
                 {
                     node.Text = element.FirstAttribute.Value.ToString();
-                    node.Name = element.LastAttribute.Value.ToString();
+                    node.Name = element.FirstAttribute.NextAttribute.Value.ToString();
                 }
             }
         }
@@ -77,12 +82,35 @@ namespace XMLReading
             {
 
                 writer.WriteStartDocument();
-                writer.WriteStartElement("node");
                 WriteNode(treeView.Nodes, writer);
-                writer.WriteEndElement();
                 writer.WriteEndDocument();
                 writer.Flush();
                 //writer.Close();
+            }
+        }
+
+        private void WriteSelectedNode(TreeNode node, XmlTextWriter writer)
+        {
+            writer.WriteStartElement("Node");
+            writer.WriteAttributeString("Text", node.Text);
+            writer.WriteAttributeString("id", node.Name);
+
+            foreach (TreeNode childNode in node.Nodes)
+            {
+                WriteSelectedNode(childNode, writer);
+            }
+
+            writer.WriteEndElement();
+        }
+
+        private void ExportSelectedNodeToXml(TreeNode selectedNode, string filePath)
+        {
+            using (XmlTextWriter writer = new XmlTextWriter(filePath, Encoding.UTF8))
+            {
+                writer.Formatting = Formatting.Indented;
+                writer.WriteStartDocument();
+                WriteSelectedNode(selectedNode, writer);
+                writer.WriteEndDocument();
             }
         }
 
@@ -110,9 +138,26 @@ namespace XMLReading
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 LoadXmlIntoTreeView(openFileDialog.FileName);
-
             }
         }
 
+        private void selectedSaveNodesButton_Click(object sender, EventArgs e)
+        {
+            if (treeView != null)
+            {
+                saveFileDialog.Filter = "XML File | *.xml";
+
+                if (saveFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    ExportSelectedNodeToXml(treeView.SelectedNode, saveFileDialog.FileName);
+
+                }
+
+            }
+            else
+            {
+                MessageBox.Show("No file yet!");
+            }
+        }
     }
 }
