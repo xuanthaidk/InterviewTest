@@ -22,14 +22,17 @@ namespace XMLReading
             if(xDoc.Root==null)
             {
                 MessageBox.Show("This XML file doesn't have root!");
+                return;
             }
             if (!xDoc.Root.HasElements)
             {
                 MessageBox.Show("This XML file doesn't have elements!");
+                return;
             }
             if (!xDoc.Root.HasAttributes)
             {
                 MessageBox.Show("This XML file doesn't have attributes!");
+                return;
             }
             TreeNode treeNode = new TreeNode(xDoc.Root.FirstAttribute.Value.ToString());
             if (xDoc.Root.FirstAttribute.NextAttribute != null)
@@ -45,7 +48,7 @@ namespace XMLReading
             foreach (XElement element in xElement.Elements())
             {
 
-                XNode xnode = new XNode(element.FirstAttribute.Value.ToString(), element.FirstAttribute.Value.ToString(), element.FirstAttribute.NextAttribute.Value.ToString());
+                //XNode xnode = new XNode(element.FirstAttribute.Value.ToString(), element.FirstAttribute.Value.ToString(), element.FirstAttribute.NextAttribute.Value.ToString());
 
                 TreeNode node = new TreeNode(element.FirstAttribute.Value.ToString());
                 node.Name = element.FirstAttribute.NextAttribute.Value.ToString();           
@@ -59,8 +62,8 @@ namespace XMLReading
                     node.Text = element.FirstAttribute.Value.ToString();
                     node.Name = element.FirstAttribute.NextAttribute.Value.ToString();
 
-                    xnode.attribute1 = element.FirstAttribute.Value.ToString();
-                    xnode.attribute2 = element.FirstAttribute.NextAttribute.Value.ToString();
+                    //xnode.attribute1 = element.FirstAttribute.Value.ToString();
+                    //xnode.attribute2 = element.FirstAttribute.NextAttribute.Value.ToString();
                 }
             }
         }
@@ -102,19 +105,20 @@ namespace XMLReading
 
         private void selectedSaveNodesButton_Click(object sender, EventArgs e)
         {
-            if (treeView != null)
-            {
-                saveFileDialog.Filter = "XML File | *.xml";
-
-                if (saveFileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    ExportSelectedNodeToXml(treeView.SelectedNode, saveFileDialog.FileName);
-                }
-
-            }
-            else
+            if (treeView == null)
             {
                 MessageBox.Show("No file yet!");
+                return;
+            }
+            saveFileDialog.Filter = "XML File | *.xml";
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                if(treeView.SelectedNode==null)
+                {
+                    MessageBox.Show("no node chose!");
+                    return;
+                }
+                ExportSelectedNodeToXml(treeView.SelectedNode, saveFileDialog.FileName);
             }
         }
 
@@ -145,7 +149,7 @@ namespace XMLReading
                 writer.WriteStartDocument();
                 WriteNode(treeView.Nodes, writer);
                 writer.WriteEndDocument();
-                writer.Flush();
+                //writer.Flush();
                 //writer.Close();
             }
         }
